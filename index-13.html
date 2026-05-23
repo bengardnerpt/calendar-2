@@ -400,7 +400,7 @@ const HOURS=Array.from({length:17},(_,i)=>i+6);
 const CELL_H=52;
 const CHIP_COLORS=['chip-p1','chip-p2','chip-p3','chip-p4','chip-p5'];
 const PRI_COLORS=['#e63946','#f4954a','#f4cf47','#5fba7d','#3b9fd9'];
-const GEMINI_KEY='AIzaSyCD8OEm2hWrqIruHTs4QSsDwgOOkCCs1UA';
+const ANTHROPIC_KEY='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';
 
 const REVIEWS=[
   {text:"This changed my whole approach to the week. I actually get everything done now and still have time for myself.",stars:5},
@@ -736,19 +736,7 @@ async function getSuggestions(){
   const prompt='You are a helpful scheduling coach. Look at this person\'s calendar and suggest 3-4 specific activities that would fit well in their empty time slots.\n\nLifestyle context: '+(lifestyle||'Not provided')+'\n\nCurrent schedule:\n'+scheduled+'\n\nActivities not yet placed: '+(unplaced.join(', ')||'None')+'\n\nLook at the genuine gaps in their schedule and suggest things that would complement what they have. Be specific about which day and time would work best and explain why briefly.\n\nReturn ONLY a JSON array:\n[{"task":"Activity name","day":"Monday","time":"7:00 PM","reason":"One sentence why this slot works","priority":3}]\nMax 4 suggestions. Return only the JSON array.';
 
   try{
-    const res=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_KEY,{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.4,maxOutputTokens:600}})
-    });
-    const data=await res.json();
-    const text=data.candidates[0].content.parts[0].text.replace(/```json|```/g,'').trim();
-    const suggestions=JSON.parse(text);
-    renderSuggestions(suggestions);
-  }catch(err){
-    list.innerHTML='<p style="font-size:13px;color:var(--gray);text-align:center">Suggestions unavailable right now — try again in a moment.</p>';
-  }
-  btn.textContent='Get AI Suggestions →';btn.disabled=false;
-}
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1024,messages:[{role:'user',content:prompt}]})});
 
 function renderSuggestions(suggestions){
   const list=document.getElementById('suggestions-list');
