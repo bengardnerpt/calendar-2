@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BG Fit | Weekly Calendar Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --black:#080A0C;--dark:#0D1117;--card:#111820;
+  --blue:#00BFFF;--blue-dim:rgba(0,191,255,0.1);--blue-mid:rgba(0,191,255,0.3);
+  --white:#F0F4F8;--grey:#8899AA;--border:#1E2D3D;
+  --p1:#FF3B3B;--p1bg:rgba(255,59,59,0.15);
+  --p2:#FF7A00;--p2bg:rgba(255,122,0,0.15);
+  --p3:#FFD600;--p3bg:rgba(255,214,0,0.15);
+  --p4:#00E5A0;--p4bg:rgba(0,229,160,0.15);
+  --p5:#7B61FF;--p5bg:rgba(123,97,255,0.15);
+}
+html,body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.active{display:flex}
+.nav{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);background:rgba(8,10,12,0.97);position:sticky;top:0;z-index:50;backdrop-filter:blur(10px)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--white)}
+.logo span{color:var(--blue)}
+.btn-ghost{background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--grey);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.btn-ghost:hover{border-color:var(--blue-mid);color:var(--blue)}
+.btn-primary{background:var(--blue);color:#080A0C;border:none;border-radius:12px;padding:16px 22px;font-size:15px;font-weight:700;cursor:pointer;width:100%;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;transition:all 0.2s}
+.btn-primary:hover{background:#33CFFF;transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.wrap{max-width:460px;margin:0 auto;padding:0 18px;width:100%}
+.big-title{font-family:'Bebas Neue',sans-serif;font-size:64px;line-height:0.88;letter-spacing:2px;color:var(--white);margin-bottom:14px}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--white);line-height:1;margin-bottom:10px}
+input,textarea,select{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px;color:var(--white);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;width:100%;transition:border-color 0.2s}
+input:focus,textarea:focus,select:focus{border-color:var(--blue-mid)}
+select option{background:var(--dark)}
+textarea{resize:vertical;line-height:1.65}
+label{font-size:11px;font-weight:600;color:var(--grey);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:5px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px}
+.photo-ph{width:100%;background:var(--card);border:1.5px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(0,191,255,0.45);font-size:12px;text-align:center;padding:24px 16px;gap:8px;letter-spacing:0.5px}
+.photo-ph svg{opacity:0.4}
+.step-num{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--blue);opacity:0.35;line-height:1;margin-bottom:2px}
+.step-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;color:var(--white);margin-bottom:8px}
+.example-box{background:rgba(0,191,255,0.05);border:1px solid rgba(0,191,255,0.15);border-radius:10px;padding:14px;margin-bottom:14px}
+.p-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.p-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.p-row input{flex:1;background:var(--dark);border:1px solid var(--border);padding:11px 13px;border-radius:8px;font-size:13px}
+.legend-row{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--grey);padding:5px 0}
+.l-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0}
+.error-box{color:#FF3B3B;font-size:13px;background:rgba(255,59,59,0.08);border:1px solid rgba(255,59,59,0.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;display:none}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,0.2);border-top:2px solid #080A0C;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,191,255,0.4)}50%{box-shadow:0 0 0 12px rgba(0,191,255,0)}}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:0.7}}
+.fade-up{animation:fadeUp 0.5s ease forwards}
+/* CALENDAR */
+.cal-wrap{overflow-x:auto;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;max-height:calc(100vh - 240px)}
+.cal-grid{display:flex;min-width:580px;position:relative}
+.time-col{width:44px;flex-shrink:0;border-right:1px solid var(--border);position:sticky;left:0;background:var(--black);z-index:10}
+.t-hdr{height:36px;border-bottom:1px solid var(--border)}
+.t-cell{height:50px;display:flex;align-items:flex-start;justify-content:flex-end;padding-right:5px;padding-top:3px;font-size:9px;color:var(--grey);border-bottom:1px solid rgba(30,45,61,0.4);font-family:monospace}
+.day-col{flex:1;min-width:76px;border-right:1px solid var(--border)}
+.d-hdr{height:36px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--blue);border-bottom:1px solid var(--border);background:var(--black);position:sticky;top:0;z-index:5}
+.cell{height:50px;border-bottom:1px solid rgba(30,45,61,0.35);position:relative;padding:1px 2px}
+.cell:hover{background:rgba(0,191,255,0.02)}
+.block{position:absolute;left:2px;right:2px;top:1px;border-radius:4px;padding:3px 5px;cursor:grab;overflow:hidden;z-index:3;user-select:none;border-left-width:3px;border-left-style:solid;transition:opacity 0.15s}
+.block:active{cursor:grabbing;opacity:0.8}
+.block-text{font-size:9px;font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.save-bar{position:sticky;bottom:0;background:rgba(8,10,12,0.97);border-top:1px solid var(--border);padding:12px 16px;z-index:40;backdrop-filter:blur(10px)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--dark);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.celebrate{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:300;display:none;align-items:center;justify-content:center;padding:24px}
+.cel-box{background:var(--card);border:2px solid var(--blue);border-radius:20px;padding:36px 28px;text-align:center;animation:fadeUp 0.4s ease;box-shadow:0 0 60px rgba(0,191,255,0.2)}
+.booking-sec{background:var(--dark);border-top:1px solid var(--border);padding:44px 0 60px}
+.book-btn{display:block;background:var(--blue);color:#080A0C;font-weight:700;font-size:15px;padding:16px 22px;border-radius:12px;text-align:center;text-decoration:none;animation:pulse 2.5s infinite;margin-top:18px;letter-spacing:0.3px}
+.saved-card{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 18px;margin-bottom:11px}
+.leg-bar{display:flex;gap:10px;padding:9px 14px;overflow-x:auto;border-bottom:1px solid var(--border);flex-shrink:0}
+.leg-item{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.leg-lbl{font-size:10px;color:var(--grey)}
+.review-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:32px;min-height:62px;display:flex;align-items:center;text-align:center}
+.rev-text{font-size:13px;color:var(--white);width:100%;transition:opacity 0.4s;line-height:1.65}
+.glow-bg{background:radial-gradient(ellipse at 70% 0%,rgba(0,191,255,0.1) 0%,transparent 65%)}
+.blue-txt{background:linear-gradient(135deg,var(--white) 0%,var(--blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;letter-spacing:0.5px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- ═══ SCREEN: SIGNUP ═══ -->
+<div id="s-signup" class="screen active">
+  <div class="glow-bg" style="min-height:100vh;padding-bottom:48px">
+    <div class="wrap" style="padding-top:56px">
+      <div style="text-align:center;margin-bottom:30px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;line-height:1"><span style="color:var(--blue)">BG</span>FIT</div>
+        <div style="font-size:11px;color:var(--grey);letter-spacing:3px;margin-top:-4px">WEEKLY CALENDAR BUILDER</div>
+      </div>
+      <div class="photo-ph" style="aspect-ratio:4/3;margin-bottom:28px">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-weight:600">YOUR PHOTO HERE</span>
+        <span style="opacity:0.55;font-size:10px">Best travelling or action shot from Instagram</span>
+      </div>
+      <div class="big-title" style="font-size:58px">LET'S GET<br>STARTED</div>
+      <p style="color:var(--grey);font-size:14px;line-height:1.8;margin-bottom:26px">Fill in your details below to get <strong style="color:var(--white)">free lifetime access</strong> — build a brand new calendar every single week.</p>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div><label>Full Name</label><input id="su-name" type="text" placeholder="Your full name" autocomplete="name"></div>
+        <div><label>Email Address</label><input id="su-email" type="email" placeholder="your@email.com" autocomplete="email"></div>
+        <div><label>Phone Number</label><input id="su-phone" type="tel" placeholder="+44 7700 000000" autocomplete="tel"></div>
+        <div id="su-err" class="error-box"></div>
+        <button class="btn-primary" onclick="doSignup()" style="margin-top:6px">Get Lifetime Access →</button>
+      </div>
+      <p style="text-align:center;color:var(--grey);font-size:11px;margin-top:16px">No spam. No payment. Just your weekly calendar.</p>
+      <p style="text-align:center;color:var(--grey);font-size:12px;margin-top:10px">Already have an account? <button onclick="goTo('login')" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;text-decoration:underline">Log in here</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: LOGIN ═══ -->
+<div id="s-login" class="screen">
+  <div class="glow-bg" style="min-height:100vh;padding-bottom:48px">
+    <div class="wrap" style="padding-top:56px">
+      <div style="text-align:center;margin-bottom:30px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;line-height:1"><span style="color:var(--blue)">BG</span>FIT</div>
+        <div style="font-size:11px;color:var(--grey);letter-spacing:3px;margin-top:-4px">WEEKLY CALENDAR BUILDER</div>
+      </div>
+      <div class="big-title" style="font-size:52px">WELCOME<br>BACK</div>
+      <p style="color:var(--grey);font-size:14px;line-height:1.8;margin-bottom:26px">Log back in with the email you signed up with to access your saved calendars.</p>
+      <div style="display:flex;flex-direction:column;gap:13px">
+        <div><label>Email Address</label><input id="li-email" type="email" placeholder="your@email.com" autocomplete="email"></div>
+        <div id="li-err" class="error-box"></div>
+        <button class="btn-primary" onclick="doLogin()" style="margin-top:6px">Log In →</button>
+      </div>
+      <p style="text-align:center;color:var(--grey);font-size:12px;margin-top:20px">New here? <button onclick="goTo('signup')" style="background:none;border:none;color:var(--blue);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;text-decoration:underline">Create a free account</button></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: HOME ═══ -->
+<div id="s-home" class="screen">
+  <nav class="nav">
+    <div class="logo">BG<span>FIT</span></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-ghost" onclick="openSavedModal()">My Calendars</button>
+      <button class="btn-ghost" onclick="doLogout()">Log Out</button>
+    </div>
+  </nav>
+  <div class="glow-bg" style="padding:36px 0 0">
+    <div class="wrap">
+      <p id="home-hi" style="color:var(--blue);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Hey 👋</p>
+      <div class="big-title">WEEKLY<br>CALENDAR<br>BUILDER</div>
+      <div class="photo-ph" style="aspect-ratio:16/9;margin-bottom:20px">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        <span style="font-weight:600">10-SECOND DEMO VIDEO</span>
+        <span style="opacity:0.55;font-size:10px">Drop your drag-and-drop demo clip here</span>
+      </div>
+      <div class="review-box"><span class="rev-text" id="rev-txt"></span></div>
+    </div>
+  </div>
+  <div style="padding:32px 0">
+    <div class="wrap">
+      <div class="photo-ph" style="aspect-ratio:4/3;margin-bottom:20px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-weight:600">YOUR PHOTO HERE</span>
+        <span style="opacity:0.55;font-size:10px">Action / lifestyle shot</span>
+      </div>
+      <div class="card" style="border-left:3px solid var(--blue);border-radius:0 14px 14px 0">
+        <div class="section-title">WHY THIS<br>MATTERS</div>
+        <p style="color:var(--grey);font-size:14px;line-height:1.85">When you have a calendar to follow, you know exactly how much time you do — and don't — have for the things that matter most. It forces you to visualise your week, spot the gaps you'd never notice when brainstorming in your head, and make sure everything gets done. Not just work. <em style="color:var(--white)">You too.</em></p>
+      </div>
+      <p style="font-size:11px;font-weight:600;color:var(--grey);letter-spacing:1px;margin-bottom:10px;text-align:center">CLIENT RESULTS</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px">
+        <div class="photo-ph" style="aspect-ratio:9/16;padding:10px"><span style="font-size:10px">Result 1</span></div>
+        <div class="photo-ph" style="aspect-ratio:9/16;padding:10px"><span style="font-size:10px">Result 2</span></div>
+        <div class="photo-ph" style="aspect-ratio:9/16;padding:10px"><span style="font-size:10px">Result 3</span></div>
+      </div>
+      <p style="font-size:10px;color:var(--grey);text-align:center;margin-bottom:32px">Add your pinned Instagram result screenshots here</p>
+    </div>
+  </div>
+  <div style="background:linear-gradient(180deg,var(--black) 0%,var(--dark) 100%);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:44px 0">
+    <div class="wrap">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:60px;line-height:0.88;letter-spacing:2px;margin-bottom:12px" class="blue-txt">LET'S MAKE<br>TIME</div>
+      <p style="color:var(--grey);font-size:14px;margin-bottom:24px;line-height:1.7">Your perfect week is waiting. Let's build it together — takes less than 5 minutes.</p>
+      <button class="btn-primary" onclick="goTo('builder')">Build My Calendar →</button>
+    </div>
+  </div>
+  <div id="saved-section" style="padding:28px 0;display:none">
+    <div class="wrap">
+      <div class="section-title" style="font-size:28px">SAVED<br>CALENDARS</div>
+      <div id="saved-list"></div>
+    </div>
+  </div>
+  <div class="booking-sec">
+    <div class="wrap">
+      <div class="photo-ph" style="aspect-ratio:4/3;margin-bottom:22px">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <span style="font-weight:600">YOUR COACHING PHOTO HERE</span>
+      </div>
+      <div class="section-title" style="font-size:30px">STRUGGLING TO<br>PUT THIS INTO<br>PRACTICE?</div>
+      <p style="color:var(--grey);font-size:14px;line-height:1.8">Book a free 1-1 call and let's break it down together. I'll help you build the exact routine that fits your life.</p>
+      <a href="https://calendly.com/bengardnerpt/ben-gardner-online-coaching" target="_blank" class="book-btn">📅 Book Here — It's Free</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: BUILDER ═══ -->
+<div id="s-builder" class="screen">
+  <nav class="nav">
+    <button class="btn-ghost" onclick="goTo('home')">← Back</button>
+    <div class="logo">BG<span>FIT</span></div>
+    <button class="btn-ghost" id="view-btn" onclick="goTo('calendar')" style="display:none">View →</button>
+  </nav>
+  <div class="wrap" style="padding-top:22px;padding-bottom:80px;flex:1;overflow-y:auto">
+    <div class="card fade-up">
+      <div class="step-num">01</div>
+      <div class="step-title">YOUR LIFESTYLE</div>
+      <p style="color:var(--grey);font-size:13px;margin-bottom:14px;line-height:1.75">Tell the AI about your week — work hours, family, travel, training habits, anything that shapes your time.</p>
+      <div class="example-box">
+        <p style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:1px;margin-bottom:7px">EXAMPLE</p>
+        <p style="font-size:13px;color:var(--grey);font-style:italic;line-height:1.7">"I work 9–5 Monday to Friday in an office, commute 45 mins each way, have two young kids at home, try to train 4x a week but really struggle to find the time, and I want to protect Sunday evenings for family."</p>
+        <p style="font-size:12px;color:var(--blue);font-weight:600;margin-top:10px">✓ Detail like this builds you the best possible schedule</p>
+      </div>
+      <textarea id="lifestyle" placeholder="Describe your lifestyle and commitments here..." rows="5"></textarea>
+    </div>
+    <div class="card">
+      <div class="step-num">02</div>
+      <div class="step-title">YOUR TOP 5<br>PRIORITIES</div>
+      <p style="color:var(--grey);font-size:13px;margin-bottom:16px">List your biggest commitments — most important first.</p>
+      <div class="p-row"><div class="p-dot" style="background:var(--p1)"></div><input id="p0" type="text" placeholder="Priority 1 — Most Important"></div>
+      <div class="p-row"><div class="p-dot" style="background:var(--p2)"></div><input id="p1" type="text" placeholder="Priority 2"></div>
+      <div class="p-row"><div class="p-dot" style="background:var(--p3)"></div><input id="p2" type="text" placeholder="Priority 3"></div>
+      <div class="p-row"><div class="p-dot" style="background:var(--p4)"></div><input id="p3" type="text" placeholder="Priority 4"></div>
+      <div class="p-row"><div class="p-dot" style="background:var(--p5)"></div><input id="p4" type="text" placeholder="Priority 5 — Least Important"></div>
+    </div>
+    <div class="card" style="margin-bottom:18px">
+      <p style="font-size:11px;font-weight:600;color:var(--grey);letter-spacing:1px;margin-bottom:12px">PRIORITY COLOUR KEY</p>
+      <div class="legend-row"><div class="l-dot" style="background:var(--p1)"></div><span><strong style="color:var(--p1)">Red</strong> — Very Important</span></div>
+      <div class="legend-row"><div class="l-dot" style="background:var(--p2)"></div><span><strong style="color:var(--p2)">Orange</strong> — Important</span></div>
+      <div class="legend-row"><div class="l-dot" style="background:var(--p3)"></div><span><strong style="color:var(--p3)">Yellow</strong> — Needs Doing</span></div>
+      <div class="legend-row"><div class="l-dot" style="background:var(--p4)"></div><span><strong style="color:var(--p4)">Green</strong> — Good To Do</span></div>
+      <div class="legend-row"><div class="l-dot" style="background:var(--p5)"></div><span><strong style="color:var(--p5)">Purple</strong> — Optional / Flexible</span></div>
+    </div>
+    <div id="build-err" class="error-box"></div>
+    <button class="btn-primary" id="build-btn" onclick="buildCalendar()">Build The Rest →</button>
+    <p style="text-align:center;font-size:12px;color:var(--grey);margin-top:12px">AI fills your full week based on your lifestyle & priorities</p>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: CALENDAR ═══ -->
+<div id="s-calendar" class="screen" style="height:100vh;overflow:hidden">
+  <nav class="nav" style="flex-shrink:0">
+    <button class="btn-ghost" onclick="goTo('builder')">← Edit</button>
+    <div class="logo">BG<span>FIT</span></div>
+    <button class="btn-ghost" onclick="openAddTask()">+ Add</button>
+  </nav>
+  <div style="padding:10px 16px 5px;flex-shrink:0">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1.5px">YOUR WEEK</div>
+    <p id="cal-info" style="font-size:12px;color:var(--grey)">Tap any block to manage it · Drag to rearrange</p>
+  </div>
+  <div class="leg-bar" style="flex-shrink:0">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--p1)"></div><span class="leg-lbl">Very Important</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--p2)"></div><span class="leg-lbl">Important</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--p3)"></div><span class="leg-lbl">Needs Doing</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--p4)"></div><span class="leg-lbl">Good To Do</span></div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--p5)"></div><span class="leg-lbl">Optional</span></div>
+  </div>
+  <div class="cal-wrap" style="flex:1" id="cal-wrap">
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+  <div class="save-bar">
+    <button class="btn-primary" onclick="saveCalendar()">💾 Save My Calendar</button>
+  </div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div id="overlay" class="overlay" style="display:none" onclick="closeOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()" id="modal-inner"></div>
+</div>
+
+<!-- CELEBRATION -->
+<div class="celebrate" id="celebrate">
+  <div class="cel-box">
+    <div style="font-size:56px;margin-bottom:14px">🎉</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--white);margin-bottom:8px">CALENDAR SAVED!</div>
+    <p style="color:var(--grey);font-size:14px;line-height:1.7">You're set for the week.<br>Now go out and smash it! 💪</p>
+    <button class="btn-primary" style="margin-top:22px;max-width:220px" onclick="closeCelebrate()">Let's Go!</button>
+  </div>
+</div>
+
+<script>
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const HOURS=Array.from({length:24},(_,i)=>i);
+const PC={
+  1:{c:'#FF3B3B',bg:'rgba(255,59,59,0.15)'},
+  2:{c:'#FF7A00',bg:'rgba(255,122,0,0.15)'},
+  3:{c:'#FFD600',bg:'rgba(255,214,0,0.15)'},
+  4:{c:'#00E5A0',bg:'rgba(0,229,160,0.15)'},
+  5:{c:'#7B61FF',bg:'rgba(123,97,255,0.15)'}
+};
+const PLABELS={1:'Very Important',2:'Important',3:'Needs Doing',4:'Good To Do',5:'Optional'};
+const REVIEWS=[
+  '"This completely changed how I see my week. Finally feel in control." ⭐⭐⭐⭐⭐',
+  '"Built my calendar in 10 minutes and actually stuck to it all week." ⭐⭐⭐⭐⭐',
+  '"I had no idea how much time I was wasting until I saw it laid out." ⭐⭐⭐⭐⭐',
+  '"The AI nailed my schedule. Rest day on Sunday was exactly what I needed." ⭐⭐⭐⭐⭐',
+  '"Went from completely overwhelmed to fully organised in one sitting." ⭐⭐⭐⭐⭐',
+  '"Best free tool I\'ve ever used for actually getting my week sorted." ⭐⭐⭐⭐⭐'
+];
+
+let user=null, blocks=[], saved=[], dragId=null, selPriority=3, revIdx=0;
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5)}
+function fmtH(h){if(h===0)return'12am';if(h===12)return'12pm';return h<12?h+'am':(h-12)+'pm'}
+
+function init(){
+  try{
+    const u=localStorage.getItem('bgfit_user');
+    const s=localStorage.getItem('bgfit_saved');
+    if(u){user=JSON.parse(u)}
+    if(s){saved=JSON.parse(s)}
+  }catch(e){}
+  startReviews();
+  if(user) goTo('home'); else goTo('signup');
+}
+
+function startReviews(){
+  const el=document.getElementById('rev-txt');
+  if(!el) return;
+  el.textContent=REVIEWS[0];
+  setInterval(()=>{
+    revIdx=(revIdx+1)%REVIEWS.length;
+    el.style.opacity='0';
+    setTimeout(()=>{el.textContent=REVIEWS[revIdx];el.style.opacity='1'},380);
+  },3800);
+}
+
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='home'){
+    document.getElementById('home-hi').textContent='Hey '+(user?.name?.split(' ')[0]||'')+' 👋';
+    renderSaved();
+  }
+  if(id==='calendar') renderCal();
+  if(id==='builder'){
+    const vb=document.getElementById('view-btn');
+    if(vb) vb.style.display=blocks.length?'block':'none';
+  }
+}
+
+function doSignup(){
+  const n=document.getElementById('su-name').value.trim();
+  const e=document.getElementById('su-email').value.trim();
+  const p=document.getElementById('su-phone').value.trim();
+  const err=document.getElementById('su-err');
+  if(!n||!e||!p){err.textContent='Please fill in all fields';err.style.display='block';return}
+  if(!/\S+@\S+\.\S+/.test(e)){err.textContent='Please enter a valid email';err.style.display='block';return}
+  user={name:n,email:e,phone:p,id:uid()};
+  try{localStorage.setItem('bgfit_user',JSON.stringify(user))}catch(x){}
+  err.style.display='none';
+  goTo('home');
+}
+
+function doLogout(){
+  user=null; blocks=[];
+  try{localStorage.removeItem('bgfit_user')}catch(x){}
+  goTo('login');
+}
+
+function doLogin(){
+  const e=document.getElementById('li-email').value.trim();
+  const err=document.getElementById('li-err');
+  if(!e){err.textContent='Please enter your email address';err.style.display='block';return}
+  if(!/\S+@\S+\.\S+/.test(e)){err.textContent='Please enter a valid email';err.style.display='block';return}
+  // Check if we have a stored user with this email
+  try{
+    const stored=localStorage.getItem('bgfit_user');
+    if(stored){
+      const u=JSON.parse(stored);
+      if(u.email.toLowerCase()===e.toLowerCase()){
+        user=u;
+        err.style.display='none';
+        goTo('home');
+        return;
+      }
+    }
+  }catch(x){}
+  err.textContent='No account found with that email. Please sign up first.';
+  err.style.display='block';
+}
+
+function openSavedModal(){
+  if(!saved.length){
+    document.getElementById('modal-inner').innerHTML=`
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:14px">MY CALENDARS</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center">
+        <div style="font-size:32px;margin-bottom:12px">📅</div>
+        <p style="color:var(--grey);font-size:14px;line-height:1.7">You haven't saved any calendars yet.<br>Build your first one and save it!</p>
+      </div>
+      <button class="btn-primary" onclick="closeModal();goTo('builder')" style="margin-top:16px">Build My Calendar →</button>
+      <button class="btn-ghost" onclick="closeModal()" style="width:100%;margin-top:9px;text-align:center">Close</button>`;
+    document.getElementById('overlay').style.display='flex';
+    return;
+  }
+  document.getElementById('modal-inner').innerHTML=`
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:16px">MY CALENDARS</div>
+    ${saved.map((c,i)=>`
+      <div class="saved-card" style="margin-bottom:11px">
+        <div>
+          <p style="font-weight:600;font-size:14px;color:var(--white)">Week of ${c.weekOf}</p>
+          <p style="font-size:12px;color:var(--grey)">${c.blocks.length} activities scheduled</p>
+        </div>
+        <div style="display:flex;gap:7px">
+          <button class="btn-ghost" style="font-size:12px;padding:6px 11px" onclick="closeModal();editCal(${i})">Edit</button>
+          <button class="btn-ghost" style="font-size:12px;padding:6px 11px;color:var(--blue);border-color:rgba(0,191,255,0.3)" onclick="closeModal();copyCal(${i})">Copy</button>
+        </div>
+      </div>`).join('')}
+    <button class="btn-ghost" onclick="closeModal()" style="width:100%;margin-top:6px;text-align:center">Close</button>`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function toggleSaved(){openSavedModal()}
+
+function renderSaved(){
+  const list=document.getElementById('saved-list');
+  const sec=document.getElementById('saved-section');
+  if(!saved.length){sec.style.display='none';return}
+  list.innerHTML=saved.map((c,i)=>`
+    <div class="saved-card">
+      <div>
+        <p style="font-weight:600;font-size:14px;color:var(--white)">Week of ${c.weekOf}</p>
+        <p style="font-size:12px;color:var(--grey)">${c.blocks.length} activities scheduled</p>
+      </div>
+      <div style="display:flex;gap:7px">
+        <button class="btn-ghost" style="font-size:12px;padding:6px 11px" onclick="editCal(${i})">Edit</button>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 11px;color:var(--blue);border-color:rgba(0,191,255,0.3)" onclick="copyCal(${i})">Copy</button>
+      </div>
+    </div>`).join('');
+}
+
+function editCal(i){blocks=saved[i].blocks.map(b=>({...b,id:uid()}));goTo('calendar')}
+function copyCal(i){blocks=saved[i].blocks.map(b=>({...b,id:uid()}));goTo('calendar')}
+
+async function buildCalendar(){
+  const lf=document.getElementById('lifestyle').value.trim();
+  const ps=[0,1,2,3,4].map(i=>document.getElementById('p'+i).value.trim()).filter(Boolean);
+  const err=document.getElementById('build-err');
+  const btn=document.getElementById('build-btn');
+  if(!lf){err.textContent='Please describe your lifestyle first';err.style.display='block';return}
+  if(!ps.length){err.textContent='Please add at least one priority';err.style.display='block';return}
+  err.style.display='none';
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Building Your Calendar...';
+
+  try{
+    const r=await fetch('/api/generate-calendar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lifestyle:lf,priorities:ps.map((p,i)=>({name:p,level:i+1})),existingBlocks:blocks})});
+    if(r.ok){
+      const d=await r.json();
+      if(d.blocks){blocks=[...blocks,...d.blocks.map(b=>({...b,id:uid()}))];btn.disabled=false;btn.innerHTML='Build The Rest →';document.getElementById('view-btn').style.display='block';goTo('calendar');return}
+    }
+  }catch(x){}
+
+  // Demo mode — smart mock calendar
+  blocks=[...blocks,...mockCalendar(lf,ps)];
+  btn.disabled=false;
+  btn.innerHTML='Build The Rest →';
+  document.getElementById('view-btn').style.display='block';
+  goTo('calendar');
+}
+
+function mockCalendar(lf,ps){
+  const bs=[];
+  const add=(title,day,startHour,duration,priority)=>bs.push({id:uid(),title,day,startHour,duration,priority});
+  DAYS.forEach(d=>{
+    add('Sleep',d,22,8,1);
+    add('Breakfast',d,7,1,3);
+    add('Lunch',d,13,1,3);
+    add('Dinner',d,19,1,3);
+  });
+  ['Monday','Tuesday','Wednesday','Thursday','Friday'].forEach(d=>{
+    add(ps[0]||'Work',d,9,4,1);
+    add(ps[1]||'Deep Focus',d,14,3,2);
+  });
+  ['Monday','Wednesday','Friday'].forEach(d=>add('Morning Workout',d,6,1,1));
+  add('Saturday Training',DAYS[5],9,1,1);
+  add('Meal Prep',DAYS[5],16,2,3);
+  add('Social Time',DAYS[5],19,2,4);
+  add('Rest Day — Recovery',DAYS[6],10,2,4);
+  add('Family Time',DAYS[6],14,3,2);
+  add(ps[2]||'Personal Development',DAYS[6],18,1,3);
+  add(ps[3]||'Admin & Planning',DAYS[6],20,1,5);
+  ['Monday','Tuesday','Thursday'].forEach(d=>add(ps[4]||'Wind Down',d,21,1,4));
+  return bs;
+}
+
+function renderCal(){
+  const grid=document.getElementById('cal-grid');
+  const info=document.getElementById('cal-info');
+  info.textContent=blocks.length+' activities · Tap to manage · Drag to rearrange';
+  let html=`<div class="time-col"><div class="t-hdr"></div>`;
+  HOURS.forEach(h=>{html+=`<div class="t-cell">${fmtH(h)}</div>`});
+  html+=`</div>`;
+  DAYS.forEach(day=>{
+    html+=`<div class="day-col"><div class="d-hdr">${day.slice(0,3)}</div>`;
+    HOURS.forEach(hour=>{
+      const cb=blocks.filter(b=>b.day===day&&b.startHour===hour);
+      html+=`<div class="cell" ondragover="event.preventDefault()" ondrop="onDrop(event,'${day}',${hour})">`;
+      cb.forEach(b=>{
+        const cfg=PC[b.priority]||PC[3];
+        const h=Math.max(b.duration*50-3,20);
+        html+=`<div class="block" id="blk-${b.id}" draggable="true"
+          style="background:${cfg.bg};border-left-color:${cfg.c};height:${h}px"
+          ondragstart="onDragStart(event,'${b.id}')"
+          onclick="openBlock('${b.id}')">
+          <span class="block-text" style="color:${cfg.c}">${b.title}</span>
+        </div>`;
+      });
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+  grid.innerHTML=html;
+}
+
+function onDragStart(e,id){dragId=id;e.dataTransfer.effectAllowed='move'}
+function onDrop(e,day,hour){
+  e.preventDefault();
+  if(!dragId)return;
+  blocks=blocks.map(b=>b.id===dragId?{...b,day,startHour:hour}:b);
+  dragId=null;renderCal();
+}
+
+function openBlock(id){
+  const b=blocks.find(x=>x.id===id);
+  if(!b)return;
+  const cfg=PC[b.priority]||PC[3];
+  document.getElementById('modal-inner').innerHTML=`
+    <div style="width:40px;height:3px;background:${cfg.c};border-radius:2px;margin-bottom:18px"></div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:7px">${b.title}</div>
+    <p style="color:var(--grey);font-size:13px;margin-bottom:6px">${b.day} · ${fmtH(b.startHour)} · ${b.duration} hour${b.duration>1?'s':''}</p>
+    <span class="tag" style="background:${cfg.bg};color:${cfg.c}">${PLABELS[b.priority]||'General'}</span>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-top:6px">
+      <button class="btn-ghost" style="text-align:left;padding:12px 15px" onclick="extBlock('${b.id}')">+ Extend by 1 hour</button>
+      <button class="btn-ghost" style="text-align:left;padding:12px 15px;${b.duration<=1?'opacity:0.35;pointer-events:none':''}" onclick="shrBlock('${b.id}')">− Shrink by 1 hour</button>
+      <button onclick="delBlock('${b.id}')" style="background:rgba(255,59,59,0.1);border:1px solid rgba(255,59,59,0.25);border-radius:10px;padding:13px 15px;color:#FF3B3B;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left">Delete this task</button>
+    </div>
+    <button class="btn-ghost" style="width:100%;margin-top:10px;text-align:center" onclick="closeModal()">Close</button>`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function extBlock(id){blocks=blocks.map(b=>b.id===id?{...b,duration:b.duration+1}:b);closeModal();renderCal()}
+function shrBlock(id){blocks=blocks.map(b=>b.id===id&&b.duration>1?{...b,duration:b.duration-1}:b);closeModal();renderCal()}
+function delBlock(id){blocks=blocks.filter(b=>b.id!==id);closeModal();renderCal()}
+
+function openAddTask(){
+  selPriority=3;
+  document.getElementById('modal-inner').innerHTML=`
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:1px;margin-bottom:18px">ADD TASK</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div><label>Task Name</label><input id="at-title" type="text" placeholder="e.g. Morning Walk"></div>
+      <div><label>Day</label><select id="at-day">${DAYS.map(d=>`<option>${d}</option>`).join('')}</select></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>Start Time</label><select id="at-hour">${HOURS.map(h=>`<option value="${h}">${fmtH(h)}</option>`).join('')}</select></div>
+        <div><label>Duration (hrs)</label><select id="at-dur">${[1,2,3,4,5,6,7,8].map(d=>`<option value="${d}">${d}h</option>`).join('')}</select></div>
+      </div>
+      <div>
+        <label>Priority Level</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+          ${Object.entries(PC).map(([k,v])=>`<button id="pb${k}" onclick="setPri(${k})" style="background:${k==3?v.bg:'transparent'};border:1px solid ${k==3?v.c:v.c+'44'};border-radius:8px;padding:7px 11px;color:${v.c};font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s">${PLABELS[k]}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="doAddTask()" style="margin-top:20px">Add to Calendar</button>
+    <button class="btn-ghost" onclick="closeModal()" style="width:100%;margin-top:9px;text-align:center">Cancel</button>`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function setPri(v){
+  selPriority=v;
+  Object.entries(PC).forEach(([k,cfg])=>{
+    const b=document.getElementById('pb'+k);
+    if(!b)return;
+    b.style.background=k==v?cfg.bg:'transparent';
+    b.style.borderColor=k==v?cfg.c:cfg.c+'44';
+  });
+}
+
+function doAddTask(){
+  const t=document.getElementById('at-title').value.trim();
+  if(!t){document.getElementById('at-title').style.borderColor='var(--p1)';return}
+  blocks.push({id:uid(),title:t,day:document.getElementById('at-day').value,startHour:parseInt(document.getElementById('at-hour').value),duration:parseInt(document.getElementById('at-dur').value),priority:selPriority,category:'custom'});
+  closeModal();renderCal();
+}
+
+function saveCalendar(){
+  const cal={id:uid(),weekOf:new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}),blocks:[...blocks],createdAt:new Date().toISOString()};
+  saved=[cal,...saved];
+  try{localStorage.setItem('bgfit_saved',JSON.stringify(saved))}catch(x){}
+  document.getElementById('celebrate').style.display='flex';
+}
+
+function closeCelebrate(){document.getElementById('celebrate').style.display='none';goTo('home')}
+function closeOverlay(e){if(e.target===document.getElementById('overlay'))closeModal()}
+function closeModal(){document.getElementById('overlay').style.display='none'}
+
+window.onload=init;
+</script>
+</body>
+</html>
