@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/BGFitCalendar.html" }
+    { "source": "/(.*)", "destination": "/bgfit-calendar.html" }
   ]
 }
